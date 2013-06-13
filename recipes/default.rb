@@ -28,18 +28,14 @@ directory node['selfsigned_certificate']['destination'] do
     recursive true
 end
 
-# create the certificate: make a request for signature for a certiciate, and have your own CA sign it.
 bash "selfsigned_certificate" do
   user "root"
   cwd node['selfsigned_certificate']['destination']
   code <<-EOH
-        echo "Creating certificate ..."
-        openssl genrsa -passout pass:#{node[:selfsigned_certificate][:sslpassphrase]} -des3 -out server.key 1024
-        openssl req -passin pass:#{node[:selfsigned_certificate][:sslpassphrase]} -subj "/C=#{node[:selfsigned_certificate][:country]}/ST=#{node[:selfsigned_certificate][:state]}/L=#{node[:selfsigned_certificate][:city]}/O=#{node[:selfsigned_certificate][:orga]}/OU=#{node[:selfsigned_certificate][:depart]}/CN=#{node[:selfsigned_certificate][:cn]}/emailAddress=#{node[:selfsigned_certificate][:email]}" -new -key server.key -out server.csr
-        cp server.key server.key.org
-        openssl rsa -passin pass:#{node[:selfsigned_certificate][:sslpassphrase]} -in server.key.org -out server.key
-        openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
-        echo "Done. Certificate available at #{node[:selfsigned_certificate][:destination]}. Have a good day citizen."
-        EOH
+    openssl genrsa -passout pass:#{node[:selfsigned_certificate][:sslpassphrase]} -out server.key 2048
+    chmod 600 server.key
+    openssl req -passin pass:#{node[:selfsigned_certificate][:sslpassphrase]} -new -key server.key -out server.csr
+    openssl req -passin pass:#{node[:selfsigned_certificate][:sslpassphrase]} -subj "/C=#{node[:selfsigned_certificate][:country]}/ST=#{node[:selfsigned_certificate][:state]}/L=#{node[:selfsigned_certificate][:city]}/O=#{node[:selfsigned_certificate][:orga]}/OU=#{node[:selfsigned_certificate][:depart]}/CN=#{node[:selfsigned_certificate][:cn]}/emailAddress=#{node[:selfsigned_certificate][:email]}" -new -key server.key -out server.csr
+    openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+  EOH
 end
-
