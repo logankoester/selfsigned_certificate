@@ -8,8 +8,15 @@
 #
 
 # install openssl if not present
-apt_package "openssl" do
-  action :install
+
+if node['platform'] == 'debian' || node['platform'] == 'ubuntu'
+  apt_package "openssl" do
+    action :install
+  end
+else
+  package 'openssl' do
+    action :install
+  end
 end
 
 # create output dir
